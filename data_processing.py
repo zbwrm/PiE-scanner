@@ -34,14 +34,13 @@ u_angles = np.linrange(H_ANGLE_RANGE[0], H_ANGLE_RANGE[1], H_RESOLUTION)
 logging.info('generating vertical angles...')
 v_angles = np.linrange(V_ANGLE_RANGE[0], V_ANGLE_RANGE[1], V_RESOLUTION)
 
-# take data
 out_array = np.array()
 logging.info('initializing serial connection...')
 with serial.Serial(device,baud) as ser:
     for u in u_angles:
         for v in v_angles:
             logging.debug(f'ordering arduino to rotate to {round(u,2)} and {round(v,2)}...')
-            ser.write(bytes(str(u) + " " + str(v)))
+            ser.write(bytes(str(u) + " " + str(v))) # subject to change based on Arduino convenience
             time.sleep(0.025)
             logging.debug('accepting averaged measurement from arduino...')
             d = int(ser.readline())
@@ -50,22 +49,5 @@ with serial.Serial(device,baud) as ser:
             y = d * np.cos(v) * np.cos(u)
             z = d * np.sin(v)
             out_array.append(f'{x},{y},{z}\n')
-    # while 1:
-    #     line = serial_port.readline()
-
-    #     # input_1 = int(new_data[0]) / 1024.0
-    #     # rolling_1 = array_rotate(rolling_1, input_1)
-    #     # rolling_1_avg = avg(rolling_1)
-
-    #     # input_2 = int(new_data[1]) / 1024.0
-    #     # rolling_2 = array_rotate(rolling_2, input_2)
-    #     # rolling_2_avg = avg(rolling_2)
-
-    #     timediff = (datetime.now() - start_time).total_seconds()
-
-    #     outstring = f"{timediff},{rolling_1_avg},{rolling_2_avg}\n"
-    #     log_file.write(outstring)
-    #     print(outstring)
-    #     log_file.flush()
 
 np.savetxt(filename, out_array)

@@ -40,7 +40,11 @@ with serial.Serial(device,baud) as ser:
     for u in u_angles:
         for v in v_angles:
             logging.debug(f'ordering arduino to rotate to {round(u,2)} and {round(v,2)}...')
-            ser.write(bytes(str(u) + " " + str(v))) # subject to change based on Arduino convenience
+
+            # this section heavily dependant on 2-way serial communication w/ the arduino. mostly TBD
+            ser.write(bytes(np.float32(u)))
+
+
             time.sleep(0.025)
             logging.debug('accepting averaged measurement from arduino...')
             d = int(ser.readline())

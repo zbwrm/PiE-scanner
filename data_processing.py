@@ -11,7 +11,7 @@ H_RESOLUTION  = 100       # how many horizontal samples
 V_RESOLUTION  = 100       # how many vertical samples
 H_ANGLE_RANGE = [-20, 20] # horizontal angular range of motion (in degrees)
 V_ANGLE_RANGE = [-30, 30] # vertical range of motion (in degrees)
-
+DIST = 0;                 # distance from part
 logging.debug('determining filename...')
 start_time = datetime.now()
 parser = argparse.ArgumentParser(description='3D Scanner Interface Program')
@@ -54,11 +54,14 @@ with serial.Serial(device,baud) as ser:
             time.sleep(0.025)
             logging.debug('accepting averaged measurement from arduino...')
             d = struct.unpack('f', ser.readline().strip())
+            q=d[0]
+            DIST = 874+ -24.7*q+.341q^2+ -2.33*10^-3*q^3+6.68*10^6*q^4
             print(d[0])
-            # logging.info(f'measuring {round(d,2)} at {round(u,2)} and {round(v,2)}')
-            # x = d * np.cos(v) * np.sin(u)
-            # y = d * np.cos(v) * np.cos(u)
-            # z = d * np.sin(v)
-            # out_array.append(f'{x},{y},{z}\n')
+            
+             logging.info(f'measuring {round(d,2)} at {round(u,2)} and {round(v,2)}')
+             x = DIST * np.cos(v) * np.sin(u)
+             y = DIST * np.cos(v) * np.cos(u)
+             z = DIST * np.sin(v)
+             out_array.append(f'{x},{y},{z}\n')
 
 np.savetxt(filename, out_array)

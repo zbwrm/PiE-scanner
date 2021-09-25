@@ -3,15 +3,14 @@ from datetime import datetime
 import numpy as np
 import argparse, logging
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 logging.info('creating global variables...')
 HERE = os.path.dirname(os.path.abspath(__file__))
-H_RESOLUTION  = 100       # how many horizontal samples
-V_RESOLUTION  = 100       # how many vertical samples
-H_ANGLE_RANGE = [-20, 20] # horizontal angular range of motion (in degrees)
-V_ANGLE_RANGE = [-30, 30] # vertical range of motion (in degrees)
+H_ANGLE_RANGE = [0, 10] # horizontal angular range of motion (in degrees)
+V_ANGLE_RANGE = [0, 10] # vertical range of motion (in degrees)
 DIST = 0;                 # distance from part
+
 logging.debug('determining filename...')
 start_time = datetime.now()
 parser = argparse.ArgumentParser(description='3D Scanner Interface Program')
@@ -30,42 +29,36 @@ filename = os.path.join(HERE, f"./scans/{args.filename}.csv")
 file = open(filename, 'w')
 file.close()
 
-logging.info('generating horizontal angles...')
-u_angles = np.linspace(H_ANGLE_RANGE[0], H_ANGLE_RANGE[1], H_RESOLUTION)
-
-logging.info('generating vertical angles...')
-v_angles = np.linspace(V_ANGLE_RANGE[0], V_ANGLE_RANGE[1], V_RESOLUTION)
-
-out_array = np.array(float)
+out_array = np.empty((1,3))
+print(out_array)
 logging.info('initializing serial connection...')
 
 with serial.Serial(device,baud) as ser:
     while (ser.readline().strip() != b'<open>'):
         continue
     
-    for u in u_angles:
-        for v in v_angles:
-            logging.debug("waiting for arduino's ready signal")
+    for u in range(H_ANGLE_RANGE[0], H_ANGLE_RANGE[1]):
+        for v in range(V_ANGLE_RANGE[0], V_ANGLE_RANGE[1]):
+            logging.debug("waiting for arduino's ready signal...")
 
             while (ser.readline().strip() != b'<angles>'):
                 continue
 
 
             logging.debug(f'ordering arduino to rotate to {round(u,2)} and {round(v,2)}...')
-            ser.write(struct.pack('2i', u, v))
-
+            ser.write((u+90).to_bytes(1, 'little')+(v+90).to_bytes(1, 'little'))
 
             time.sleep(0.025)
             logging.debug('accepting averaged measurement from arduino...')
-            d = struct.unpack('f', ser.readline().strip())
-            q=d[0]
-            DIST = 874+ -24.7*q+.341*q^2+ -2.33*10^-3*q^3+6.68*10^6*q^4
-            print(d[0])
+            d = int.from_bytes(ser.readline().strip(),'big')
+            # more processing here ??
+
+            DIST = 874 - (24.7*d) + (.341*(d**2)) - (.00233*(d**3)) + (.00000668*(d**4))
             
-            logging.info(f'measuring {round(d,2)} at {round(u,2)} and {round(v,2)}')
+            logging.info(f'measured {round(d,2)} at {round(u,2)} and {round(v,2)}')
             x = DIST * np.cos(v) * np.sin(u)
             y = DIST * np.cos(v) * np.cos(u)
             z = DIST * np.sin(v)
-            out_array.append(f'{x},{y},{z}\n')
+            out_array = np.vstack([out_array,[x,y,z]])
 
-np.savetxt(filename, out_array)
+np.savetxt(filename, out_array, delimiter=",")

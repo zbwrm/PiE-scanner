@@ -1,9 +1,6 @@
-typedef union {
-  float floatingPoint;
-  byte binary[4];
-} binaryFloat;
+#include <Servo.h>
 
-binaryFloat angles[2];
+int angles[2];
 float currentMeasurement;
 
 Servo vert;
@@ -24,7 +21,12 @@ void loop() {
 
   // recieve/unpack new angles
   Serial.println("<angles>");
-  angles = recieveAngles();
+  angles[0] = recieveAngle();
+  angles[1] = recieveAngle();
+  
+  while (Serial.available() > 0) {
+    Serial.read();
+  }
   // move to new angles
 
   vert.write(angles[0]);
@@ -34,38 +36,25 @@ void loop() {
   currentMeasurement = takeMeasurements();
 
 //  Serial.println("<measurement>");
-  sendUnion(currentMeasurement);
+  Serial.println(currentMeasurement);
   // println it in serial
   
   // wait? maybe?
 }
 
-void sendUnion(binaryFloat in) {
-  Serial.write(in.binary,4);
-  Serial.println();
+int recieveAngle() {
+  int outAngle;
+  outAngle = Serial.read();
+  return outAngle;
 }
 
-void recieveAngles() {
-  binaryFloat outAngles[2];
-  Serial.println("<angles>");
-  for (int i = 0; i < 8; i++) {
-    if (i < 4) {
-      outAngles[0].binary[i % 4] = Serial.read();
-    } else {
-      outAngles[1].binary[i % 4] = Serial.read();
-    }
-  }
-  while (Serial.available > 0) {
-    Serial.read();
-  }
-  return outAngles;
-}
-
-void takeMeasurements() {
-  binaryFloat measureSum;
+int takeMeasurements() {
+  int measureSum;
+  int measureAvg;
   for (int i = 0; i < 8; i++){
     measureSum += analogRead(A0);
     delay(10);
   }
-  return (measureSum / 8);
+  measureAvg = measureSum / 8;
+  return measureAvg;
 }

@@ -45,23 +45,27 @@ with serial.Serial(device,baud) as ser:
     
     for u in u_angles:
         for v in v_angles:
-            logging.debug(f'ordering arduino to rotate to {round(u,2)} and {round(v,2)}...')
+            logging.debug("waiting for arduino's ready signal")
 
-            # this section heavily dependant on 2-way serial communication w/ the arduino. mostly TBD
-            ser.write(struct.pack('2f', u, v))
+            while (ser.readline().strip() != b'<angles>'):
+                continue
+
+
+            logging.debug(f'ordering arduino to rotate to {round(u,2)} and {round(v,2)}...')
+            ser.write(struct.pack('2i', u, v))
 
 
             time.sleep(0.025)
             logging.debug('accepting averaged measurement from arduino...')
             d = struct.unpack('f', ser.readline().strip())
             q=d[0]
-            DIST = 874+ -24.7*q+.341q^2+ -2.33*10^-3*q^3+6.68*10^6*q^4
+            DIST = 874+ -24.7*q+.341*q^2+ -2.33*10^-3*q^3+6.68*10^6*q^4
             print(d[0])
             
-             logging.info(f'measuring {round(d,2)} at {round(u,2)} and {round(v,2)}')
-             x = DIST * np.cos(v) * np.sin(u)
-             y = DIST * np.cos(v) * np.cos(u)
-             z = DIST * np.sin(v)
-             out_array.append(f'{x},{y},{z}\n')
+            logging.info(f'measuring {round(d,2)} at {round(u,2)} and {round(v,2)}')
+            x = DIST * np.cos(v) * np.sin(u)
+            y = DIST * np.cos(v) * np.cos(u)
+            z = DIST * np.sin(v)
+            out_array.append(f'{x},{y},{z}\n')
 
 np.savetxt(filename, out_array)

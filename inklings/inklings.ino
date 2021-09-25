@@ -23,16 +23,18 @@ void setup() {
 void loop() {
 
   // recieve/unpack new angles
+  Serial.println("<angles>");
   angles = recieveAngles();
   // move to new angles
 
-
+  vert.write(angles[0]);
+  horz.write(angles[1]);
 
   
   currentMeasurement = takeMeasurements();
 
-  Serial.println("<measurement>");
-  Serial.println(currentMeasurement);
+//  Serial.println("<measurement>");
+  sendUnion(currentMeasurement);
   // println it in serial
   
   // wait? maybe?
@@ -60,7 +62,7 @@ void recieveAngles() {
 }
 
 void takeMeasurements() {
-  float measureSum;
+  binaryFloat measureSum;
   for (int i = 0; i < 8; i++){
     measureSum += analogRead(A0);
     delay(10);

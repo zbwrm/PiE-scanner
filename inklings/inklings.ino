@@ -36,10 +36,11 @@ void loop() {
   currentMeasurement = takeMeasurements();
 
 //  Serial.println("<measurement>");
-  Serial.println(currentMeasurement);
+  Serial.println(int(currentMeasurement));
   // println it in serial
   
   // wait? maybe?
+  delay(100);
 }
 
 int recieveAngle() {
@@ -49,7 +50,7 @@ int recieveAngle() {
 }
 
 int takeMeasurements() {
-  int measureSum;
+  int measureSum = 0;
   int measureAvg;
   for (int i = 0; i < 8; i++){
     measureSum += analogRead(A0);

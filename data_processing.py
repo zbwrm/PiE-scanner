@@ -45,17 +45,16 @@ with serial.Serial(device,baud) as ser:
                 continue
 
 
-            logging.debug(f'ordering arduino to rotate to {round(u,2)} and {round(v,2)}...')
+            logging.debug(f'ordering arduino to rotate to {u} and {v}...')
             ser.write((u+90).to_bytes(1, 'little')+(v+90).to_bytes(1, 'little'))
 
             time.sleep(0.025)
             logging.debug('accepting averaged measurement from arduino...')
-            d = int.from_bytes(ser.readline().strip(),'big')
-            # more processing here ??
+            d = int(ser.readline().strip().decode('utf-8'))
 
             DIST = 874 - (24.7*d) + (.341*(d**2)) - (.00233*(d**3)) + (.00000668*(d**4))
             
-            logging.info(f'measured {round(d,2)} at {round(u,2)} and {round(v,2)}')
+            logging.info(f'measured {d} at {u} and {v}')
             x = DIST * np.cos(v) * np.sin(u)
             y = DIST * np.cos(v) * np.cos(u)
             z = DIST * np.sin(v)

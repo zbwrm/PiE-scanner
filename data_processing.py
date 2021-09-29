@@ -7,8 +7,11 @@ logging.basicConfig(level=logging.INFO)
 
 logging.info('creating global variables...')
 HERE = os.path.dirname(os.path.abspath(__file__))
-H_ANGLE_RANGE = [0, 10] # horizontal angular range of motion (in degrees)
-V_ANGLE_RANGE = [0, 10] # vertical range of motion (in degrees)
+H_ANGLE_RANGE_MAX = [-85, 0] # max horizontal angular range of motion (in degrees)
+V_ANGLE_RANGE_MAX = [-40, 15] # max vertical range of motion (in degrees)
+
+H_ANGLE_RANGE = [-60, -25] # horizontal angular range of motion (in degrees)
+V_ANGLE_RANGE = [-30, 5] # vertical range of motion (in degrees)
 DIST = 0;                 # distance from part
 
 logging.debug('determining filename...')
@@ -18,7 +21,7 @@ parser.add_argument('filename', type=str,
                     help='Names the CSV that is created. ([filename].csv)')
 args = parser.parse_args()
 
-device = "/dev/cu.usbmodem14301"
+device = "/dev/cu.usbmodem14101"
 baud   = "9600"
 
 logging.info('creating file to write to...')
@@ -48,16 +51,15 @@ with serial.Serial(device,baud) as ser:
             logging.debug(f'ordering arduino to rotate to {u} and {v}...')
             ser.write((u+90).to_bytes(1, 'little')+(v+90).to_bytes(1, 'little'))
 
-            time.sleep(0.025)
             logging.debug('accepting averaged measurement from arduino...')
             d = int(ser.readline().strip().decode('utf-8'))
 
-            DIST = 874 - (24.7*d) + (.341*(d**2)) - (.00233*(d**3)) + (.00000668*(d**4))
+            DIST = 152 - (8.48*d) + (7.99*(d**2)) - (.775*(d**3)) + (.0344*(d**4))
             
             logging.info(f'measured {d} at {u} and {v}')
-            x = DIST * np.cos(v) * np.sin(u)
-            y = DIST * np.cos(v) * np.cos(u)
-            z = DIST * np.sin(v)
+            x = DIST * np.cos(np.radians(v)) * np.sin(np.radians(u))
+            y = DIST * np.cos(np.radians(v)) * np.cos(np.radians(u))
+            z = DIST * np.sin(np.radians(v))
             out_array = np.vstack([out_array,[x,y,z]])
 
 np.savetxt(filename, out_array, delimiter=",")

@@ -54,7 +54,7 @@ int takeMeasurements() {
   int measureAvg;
   for (int i = 0; i < 8; i++){
     measureSum += analogRead(A0);
-    delay(10);
+    delay(25);
   }
   measureAvg = measureSum / 8;
   return measureAvg;

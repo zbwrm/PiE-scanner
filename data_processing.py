@@ -10,8 +10,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 H_ANGLE_RANGE_MAX = [-85, 0] # max horizontal angular range of motion (in degrees)
 V_ANGLE_RANGE_MAX = [-40, 15] # max vertical range of motion (in degrees)
 
-H_ANGLE_RANGE = [-60, -25] # horizontal angular range of motion (in degrees)
-V_ANGLE_RANGE = [-30, 5] # vertical range of motion (in degrees)
+H_ANGLE_RANGE = [-80, -20] # horizontal angular range of motion (in degrees)
+V_ANGLE_RANGE = [-60, -15] # vertical range of motion (in degrees)
 DIST = 0;                 # distance from part
 
 logging.debug('determining filename...')
@@ -29,11 +29,17 @@ if f"{args.filename}.csv" in os.listdir("./scans"):
     logging.error(f"scans/{args.filename}.csv already exists")
     exit()
 filename = os.path.join(HERE, f"./scans/{args.filename}.csv")
+filename_raw = os.path.join(HERE, f"./scans/{args.filename}_raw.csv")
+
 file = open(filename, 'w')
 file.close()
+file = open(filename_raw, 'w')
+file.close()
 
-out_array = np.empty((1,3))
-print(out_array)
+
+
+out_array = np.array(['X', 'Y', 'Z'])
+raw_array = np.array(['D', 'U', 'V'])
 logging.info('initializing serial connection...')
 
 with serial.Serial(device,baud) as ser:
@@ -42,7 +48,7 @@ with serial.Serial(device,baud) as ser:
 
     for u in range(H_ANGLE_RANGE[0], H_ANGLE_RANGE[1]):
         for v in range(V_ANGLE_RANGE[0], V_ANGLE_RANGE[1]):
-            logging.debug("waiting for arduino's ready signal...")
+            logging.debug("waiting for Arduino's ready signal...")
 
             while (ser.readline().strip() != b'<angles>'):
                 continue
@@ -60,6 +66,9 @@ with serial.Serial(device,baud) as ser:
             x = DIST * np.cos(math.radians(v)) * np.sin(math.radians(u))
             y = DIST * np.cos(math.radians(v)) * np.cos(math.radians(u))
             z = DIST * np.sin(math.radians(v))
-            out_array = np.vstack([out_array,[x,y,z]])
+            if DIST < 200:
+                out_array = np.vstack([out_array,[x,y,z]])
+            raw_array = np.vstack([raw_array, [d,u,v]])
 
-np.savetxt(filename, out_array, delimiter=",")
+np.savetxt(filename, out_array, delimiter=",", fmt='%s')
+np.savetxt(filename_raw, raw_array, delimiter=',', fmt='%s')

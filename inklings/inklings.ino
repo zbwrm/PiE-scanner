@@ -29,8 +29,8 @@ void loop() {
   }
   // move to new angles
 
-  vert.write(angles[0]);
-  horz.write(angles[1]);
+  vert.write(angles[1]);
+  horz.write(angles[0]);
 
   
   currentMeasurement = takeMeasurements();
@@ -40,7 +40,7 @@ void loop() {
   // println it in serial
   
   // wait? maybe?
-  delay(100);
+  delay(10);
 }
 
 int recieveAngle() {

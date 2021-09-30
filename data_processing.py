@@ -61,6 +61,7 @@ with serial.Serial(device,baud) as ser:
 
             # DIST = 152 - (8.48*d) + (7.99*(d**2)) - (.775*(d**3)) + (.0344*(d**4))
             DIST = 1335 - (23.1*d) + (0.176*d**2) - (.00071*d**3) + (.0000016*d**4) - (.00000000188*d**5) + (.00000000000091*d**6)
+            # DIST = 153.38 * math.exp(-0.005*d)
             
             logging.info(f'measured {d} at {u} and {v}')
             x = DIST * np.cos(math.radians(v)) * np.sin(math.radians(u))

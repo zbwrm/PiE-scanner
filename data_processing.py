@@ -1,4 +1,4 @@
-import serial, struct, os, time
+import serial, os, math
 from datetime import datetime
 import numpy as np
 import argparse, logging
@@ -39,7 +39,7 @@ logging.info('initializing serial connection...')
 with serial.Serial(device,baud) as ser:
     while (ser.readline().strip() != b'<open>'):
         continue
-    
+
     for u in range(H_ANGLE_RANGE[0], H_ANGLE_RANGE[1]):
         for v in range(V_ANGLE_RANGE[0], V_ANGLE_RANGE[1]):
             logging.debug("waiting for arduino's ready signal...")
@@ -47,19 +47,19 @@ with serial.Serial(device,baud) as ser:
             while (ser.readline().strip() != b'<angles>'):
                 continue
 
-
             logging.debug(f'ordering arduino to rotate to {u} and {v}...')
             ser.write((u+90).to_bytes(1, 'little')+(v+90).to_bytes(1, 'little'))
 
             logging.debug('accepting averaged measurement from arduino...')
             d = int(ser.readline().strip().decode('utf-8'))
 
-            DIST = 152 - (8.48*d) + (7.99*(d**2)) - (.775*(d**3)) + (.0344*(d**4))
+            # DIST = 152 - (8.48*d) + (7.99*(d**2)) - (.775*(d**3)) + (.0344*(d**4))
+            DIST = 1335 - (23.1*d) + (0.176*d**2) - (.00071*d**3) + (.0000016*d**4) - (.00000000188*d**5) + (.00000000000091*d**6)
             
             logging.info(f'measured {d} at {u} and {v}')
-            x = DIST * np.cos(np.radians(v)) * np.sin(np.radians(u))
-            y = DIST * np.cos(np.radians(v)) * np.cos(np.radians(u))
-            z = DIST * np.sin(np.radians(v))
+            x = DIST * np.cos(math.radians(v)) * np.sin(math.radians(u))
+            y = DIST * np.cos(math.radians(v)) * np.cos(math.radians(u))
+            z = DIST * np.sin(math.radians(v))
             out_array = np.vstack([out_array,[x,y,z]])
 
 np.savetxt(filename, out_array, delimiter=",")

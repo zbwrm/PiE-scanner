@@ -1,7 +1,9 @@
 #include <Servo.h>
 
 int angles[2];
+int oldAngles[2];
 float currentMeasurement;
+
 
 Servo vert;
 Servo horz;
@@ -21,17 +23,26 @@ void loop() {
 
   // recieve/unpack new angles
   Serial.println("<angles>");
+  oldAngles[0] = angles[0];
+  oldAngles[1] = angles[1];
   angles[0] = recieveAngle();
   angles[1] = recieveAngle();
-  
+
+  // clear serial (just in case)
   while (Serial.available() > 0) {
     Serial.read();
   }
+
+  
   // move to new angles
-
+  if (angles[0] != oldAngles[0]) {
+    horz.write(angles[0]);
+    delay(100);
+  }
   vert.write(angles[1]);
-  horz.write(angles[0]);
-
+  delay(75);
+  
+  
   
   currentMeasurement = takeMeasurements();
 
@@ -40,7 +51,6 @@ void loop() {
   // println it in serial
   
   // wait? maybe?
-  delay(10);
 }
 
 int recieveAngle() {
@@ -49,13 +59,17 @@ int recieveAngle() {
   return outAngle;
 }
 
+//int takeMeasurements() {
+//  int measureSum = 0;
+//  int measureAvg;
+//  for (int i = 0; i < 3; i++){
+//    measureSum += analogRead(A0);
+//    delay(25);
+//  }
+//  measureAvg = measureSum / 3;
+//  return measureAvg;
+//}
+
 int takeMeasurements() {
-  int measureSum = 0;
-  int measureAvg;
-  for (int i = 0; i < 8; i++){
-    measureSum += analogRead(A0);
-    delay(25);
-  }
-  measureAvg = measureSum / 8;
-  return measureAvg;
+  return analogRead(A0);
 }

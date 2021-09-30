@@ -60,7 +60,7 @@ int receive_angle() {
 }
 
 int take_measurements() {
- int lowestMeasurement;
+ int lowestMeasurement=1000;
  int newMeasurements;
 
  for (int i = 0; i < 3; i++){

@@ -8,10 +8,11 @@ logging.basicConfig(level=logging.INFO)
 logging.info('creating global variables...')
 HERE = os.path.dirname(os.path.abspath(__file__))
 H_ANGLE_RANGE_MAX = [-85, 0] # max horizontal angular range of motion (in degrees)
-V_ANGLE_RANGE_MAX = [-40, 15] # max vertical range of motion (in degrees)
+V_ANGLE_RANGE_MAX = [-35, 15] # max vertical range of motion (in degrees)
 
-H_ANGLE_RANGE = [-80, -20] # horizontal angular range of motion (in degrees)
-V_ANGLE_RANGE = [-60, -15] # vertical range of motion (in degrees)
+H_ANGLE_RANGE = range(-80, -20) # horizontal angular range of motion (in degrees)
+V_ANGLE_RANGE = range(-60, -15) # vertical range of motion (in degrees)
+
 DIST = 0;                 # distance from part
 
 logging.debug('determining filename...')
@@ -30,24 +31,31 @@ if f"{args.filename}.csv" in os.listdir("./scans"):
     exit()
 filename = os.path.join(HERE, f"./scans/{args.filename}.csv")
 filename_raw = os.path.join(HERE, f"./scans/{args.filename}_raw.csv")
+filename_heat = os.path.join(HERE, f"./scans/{args.filename}_heat.csv")
 
 file = open(filename, 'w')
 file.close()
 file = open(filename_raw, 'w')
 file.close()
+file = open(filename_heat, 'w')
+file.close()
+
 
 
 
 out_array = np.array(['X', 'Y', 'Z'])
 raw_array = np.array(['D', 'U', 'V'])
+heat_array = np.empty((len(H_ANGLE_RANGE), len(V_ANGLE_RANGE)))
 logging.info('initializing serial connection...')
 
 with serial.Serial(device,baud) as ser:
     while (ser.readline().strip() != b'<open>'):
         continue
 
-    for u in range(H_ANGLE_RANGE[0], H_ANGLE_RANGE[1]):
-        for v in range(V_ANGLE_RANGE[0], V_ANGLE_RANGE[1]):
+    for i in range(len(H_ANGLE_RANGE)):
+        for j in range(len(V_ANGLE_RANGE)):
+            u = H_ANGLE_RANGE[i]
+            v = V_ANGLE_RANGE[j]
             logging.debug("waiting for Arduino's ready signal...")
 
             while (ser.readline().strip() != b'<angles>'):
@@ -70,6 +78,9 @@ with serial.Serial(device,baud) as ser:
             if DIST < 200:
                 out_array = np.vstack([out_array,[x,y,z]])
             raw_array = np.vstack([raw_array, [d,u,v]])
+            heat_array[i, j] = DIST
+            
 
 np.savetxt(filename, out_array, delimiter=",", fmt='%s')
 np.savetxt(filename_raw, raw_array, delimiter=',', fmt='%s')
+np.savetxt(filename_heat, heat_array, delimiter=',', fmt='%s')

@@ -12,9 +12,6 @@ parser = argparse.ArgumentParser(description='3D Scanner Plotting Program')
 parser.add_argument('filename', type=str,
                     help='The filename to be read and plotted. (scans/[filename].csv)')
 
-parser.add_argument('data_type', type=str,
-                    help="Whether you're accessing data pre- or post-processing. ('raw' looks at raw sensor data, 'post' looks at data after conversion to Cartesian coordinates)")
-
 args = parser.parse_args()
 
 logging.info(f"looking for file {args.filename} in ./scans/...")
@@ -27,22 +24,12 @@ df = pd.read_csv(f'./scans/{args.filename}.csv')
 
 sns.set(style = "darkgrid")
 
-fig = plt.figure()
-ax = fig.add_subplot(111, projection = '3d')
 
-if args.data_type == 'post':
-    x = df['X']
-    y = df['Y']
-    z = df['Z']
 
-    ax.set_xlabel("X (cm)")
-    ax.set_ylabel("Y (cm)")
-    ax.set_zlabel("Z (cm)")
+if args.filename[-3:] == 'raw':
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection = '3d')
 
-    ax.scatter(x, y, z, marker='.', s=5)
-    plt.show()
-    
-if args.data_type == 'raw':
     d = df['D']
     u = df['U']
     v = df['V']
@@ -52,4 +39,24 @@ if args.data_type == 'raw':
     ax.set_ylabel("V (deg)")
 
     ax.scatter(u, v, d, marker='.', s=5)
+    plt.show()
+
+if args.filename[-4:] == 'heat':
+    fig = plt.figure()
+    sns.heatmap(df)
+
+    plt.show()
+else:
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection = '3d')
+
+    x = df['X']
+    y = df['Y']
+    z = df['Z']
+
+    ax.set_xlabel("X (cm)")
+    ax.set_ylabel("Y (cm)")
+    ax.set_zlabel("Z (cm)")
+
+    ax.scatter(x, y, z, marker='.', s=5)
     plt.show()

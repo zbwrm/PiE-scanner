@@ -1,5 +1,6 @@
 import os, argparse, logging
 import matplotlib.pyplot as plt
+plt.rcParams["axes.grid"] = False
 import pandas as pd
 import seaborn as sns
 
@@ -43,8 +44,11 @@ if args.filename[-3:] == 'raw':
 
 if args.filename[-4:] == 'heat':
     fig = plt.figure()
-    sns.heatmap(df)
+    # sns.heatmap(df, cbar_kws={'label': 'Calculated distance (cm)', 'orientation': 'horizontal'})
+    plt.imshow(df.transpose()[::-1], cmap='hot', interpolation='nearest')
 
+    plt.xlabel("Horizontal angle (Degrees)")
+    plt.ylabel("Vertical angle (Degrees)")
     plt.show()
 else:
     fig = plt.figure()

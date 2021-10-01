@@ -78,7 +78,7 @@ with serial.Serial(device,baud) as ser:
             if DIST < 200:
                 out_array = np.vstack([out_array,[x,y,z]])
             raw_array = np.vstack([raw_array, [d,u,v]])
-            heat_array[j, i] = DIST
+            heat_array[i, j] = DIST
             
 
 np.savetxt(filename, out_array, delimiter=",", fmt='%s')

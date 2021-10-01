@@ -7,11 +7,11 @@ logging.basicConfig(level=logging.INFO)
 
 logging.info('creating global variables...')
 HERE = os.path.dirname(os.path.abspath(__file__))
-H_ANGLE_RANGE_MAX = [-85, 0] # max horizontal angular range of motion (in degrees)
-V_ANGLE_RANGE_MAX = [-35, 15] # max vertical range of motion (in degrees)
 
 H_ANGLE_RANGE = range(-80, -20) # horizontal angular range of motion (in degrees)
-V_ANGLE_RANGE = range(-60, -15) # vertical range of motion (in degrees)
+# V_ANGLE_RANGE = range(-60, -15) # vertical range of motion (in degrees)
+V_ANGLE_RANGE = range(-23, -22) # vertical range of motion (in degrees)
+
 
 DIST = 0;                 # distance from part
 

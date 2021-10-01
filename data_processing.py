@@ -68,8 +68,8 @@ with serial.Serial(device,baud) as ser:
             d = int(ser.readline().strip().decode('utf-8'))
 
             # DIST = 152 - (8.48*d) + (7.99*(d**2)) - (.775*(d**3)) + (.0344*(d**4))
-            DIST = 1335 - (23.1*d) + (0.176*d**2) - (.00071*d**3) + (.0000016*d**4) - (.00000000188*d**5) + (.00000000000091*d**6)
-            # DIST = 153.38 * math.exp(-0.005*d)
+            # DIST = 1335 - (23.1*d) + (0.176*d**2) - (.00071*d**3) + (.0000016*d**4) - (.00000000188*d**5) + (.00000000000091*d**6)
+            DIST = 153.38 * math.exp(-0.005*d)
             
             logging.info(f'measured {d} at {u} and {v}')
             x = DIST * np.cos(math.radians(v)) * np.sin(math.radians(u))
@@ -78,7 +78,7 @@ with serial.Serial(device,baud) as ser:
             if DIST < 200:
                 out_array = np.vstack([out_array,[x,y,z]])
             raw_array = np.vstack([raw_array, [d,u,v]])
-            heat_array[i, j] = DIST
+            heat_array[j, i] = DIST
             
 
 np.savetxt(filename, out_array, delimiter=",", fmt='%s')
